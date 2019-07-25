@@ -216,11 +216,36 @@ we'll remember to import this file when we use enzyme
 
 `$ touch src/CodeInput.js src/CodeInput.test.js`
 
-<sub>./src/CodeInput.js</sub>
+<sub>./src/CodeInput.test.js</sub>
 ```js
+import React from 'react';
 
+import './enzyme-config';
+import { mount } from 'enzyme';
+
+import CodeInput from './CodeInput';
+
+
+it('renders the CodeInput', ()=>{
+  const p = mount(<CodeInput />);
+
+  expect(p.html()).toMatch(/div/);
+});
 ```
 
+<sub>./src/CodeInput.js</sub>
+```js
+import React from 'react';
+
+const CodeInput = ()=> (
+  <div/>
+);
+
+export default CodeInput;
+```
+
+
+now we're ready to TDD this component into existence!
 
 
 

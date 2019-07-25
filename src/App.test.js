@@ -5,7 +5,7 @@ import App, { App as RawApp } from './App';
 import { Provider } from 'react-redux';
 import store from './store';
 
-//import './enzyme-config';
+import './enzyme-config';
 import { mount } from 'enzyme';
 
 it('renders without crashing', () => {
