@@ -3,7 +3,7 @@ import './App.css';
 
 import { connect } from 'react-redux';
 
-const App = ({ code })=> (
+export const App = ({ code })=> (
   <div className="App">
     {code}
   </div>

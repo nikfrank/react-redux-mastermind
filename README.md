@@ -42,7 +42,7 @@ comletion of the course will establish a student's completion of React fundament
 
 `$ cd mastermind`
 
-`$ yarn add redux react-redux`
+`$ yarn add redux react-redux enzyme enzyme-adapter-react-16`
 
 `$ npm start`
 
@@ -120,7 +120,6 @@ export const initState = {
 };
 
 
-
 export const reducers = {
   
 };
@@ -154,7 +153,74 @@ export default connect(state => state)(App);
 ```
 
 
+when running the webpack dev server (`$ yarn start`) we should now see our code `1234` rendered
+
+
 ### testing our setup
+
+now that our state and our Component are separate, we can test them separately
+
+`$ touch src/store.test.js`
+
+
+at first we'll just test that the initialization is done correctly
+
+
+<sub>./src/store.test.js</sub>
+```js
+import store from './store';
+
+it('has an initial state', ()=>{
+  const initState = store.getState();
+
+  expect(typeof initState).toEqual('object');
+});
+```
+
+
+in both cases
+
+<sub>./src/App.test.js</sub>
+```js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+
+import { Provider } from 'react-redux';
+import store from './store';
+
+it('renders without crashing', () => {
+  const div = document.createElement('div');
+  ReactDOM.render(<Provider store={store}><App /></Provider>, div);
+  ReactDOM.unmountComponentAtNode(div);
+});
+```
+
+### enzyme config
+
+`$ touch src/enzyme-config.js`
+
+<sub>./src/enzyme-config.js</sub>
+```js
+import { configure } from 'enzyme';
+import Adapter from 'enzyme-adapter-react-16';
+
+configure({ adapter: new Adapter() });
+```
+
+we'll remember to import this file when we use enzyme
+
+
+## the user input component
+
+
+`$ touch src/CodeInput.js src/CodeInput.test.js`
+
+<sub>./src/CodeInput.js</sub>
+```js
+
+```
+
 
 
 
