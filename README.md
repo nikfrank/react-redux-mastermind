@@ -248,6 +248,16 @@ export default CodeInput;
 now we're ready to TDD this component into existence!
 
 
+### what does this thing do again?
+
+our `CodeInput` will need to display the current code value, and provide buttons for altering the code
+
+<sub>./src/CodeInput.test.js</sub>
+```js
+
+```
+
+
 
 
 
