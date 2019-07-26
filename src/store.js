@@ -8,8 +8,14 @@ export const initState = {
 
 
 export const reducers = {
-  
+  setCode: (state, action)=> ({ ...state, code: action.payload }),
 };
+
+
+export const actions = {
+  setCode: code => ({ type: 'setCode', payload: code }),  
+};
+
 
 export const identity = i => i;
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App, { App as RawApp } from './App';
+import App from './App';
 
 import { Provider } from 'react-redux';
 import store from './store';
@@ -15,8 +15,10 @@ it('renders without crashing', () => {
 });
 
 
-it('munts to enzyme', ()=>{
-  const p = mount(<RawApp code={[1, 2, 3, 4]}/>);
+it('mounts to enzyme', ()=>{
+  const p = mount(<Provider store={store}><App /></Provider>);
 
-  console.log(p.html());
+  const state = store.getState();
+
+  expect(state.code).toEqual([1, 2, 3, 4]); // the initState
 });
