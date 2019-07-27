@@ -776,7 +776,7 @@ let's run `$ yarn test --coverage --watchAll=false` and see where we're at again
 I'm finding it a bit annoying that jest is collecting coverage from files I don't care to test (index.js, serviceWorker.js, enzyme-config.js)
 
 
-so I'll add the following to my `<sub>./package.json</sub> to clean that up
+so I'll add the following to my <sub>./package.json</sub> to clean that up
 
 ```js
 //...
