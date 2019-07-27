@@ -492,7 +492,7 @@ which we need in our test
 
 let's see what our testing coverage looks like
 
-`$ yarn test --coverage
+`$ yarn test --coverage --watchAll=false`
 
 
 pretty pretty good.
@@ -609,8 +609,50 @@ it('mounts to enzyme', ()=>{
 
   expect(state.code).toEqual([1, 2, 3, 4]); // the initState
 });
+```
+
+
+now we can conduct a series of actions and expect the userflow to be maintained over them
+
+```js
+it('mounts to enzyme', ()=>{
+  const p = mount(<Provider store={store}><App /></Provider>);
+
+  const state = store.getState();
+
+  expect(state.code).toEqual([1, 2, 3, 4]); // the initState
+
+  p.find('.up0').at(0).simulate('click');
+  const state1 = store.getState();
+  expect(state1.code).toEqual([2, 2, 3, 4]);
+
+  p.find('.up0').at(0).simulate('click');
+  const state2 = store.getState();
+  expect(state2.code).toEqual([3, 2, 3, 4]);
+});
+```
+
+we can also make sure to test our edge cases
+
+```js
+  p.find('.dn1').at(0).simulate('click');
+  const state3 = store.getState();
+  expect(state3.code).toEqual([3, 1, 3, 4]);
+
+  p.find('.dn1').at(0).simulate('click');
+  const state4 = store.getState();
+  expect(state4.code).toEqual([3, 0, 3, 4]);
+
+  p.find('.dn1').at(0).simulate('click');
+  const state5 = store.getState();
+  expect(state5.code).toEqual([3, 5, 3, 4]);
+
+  p.find('.up1').at(0).simulate('click');
+  const state6 = store.getState();
+  expect(state6.code).toEqual([3, 0, 3, 4]);
 
 ```
+
 
 
 
@@ -618,7 +660,45 @@ it('mounts to enzyme', ()=>{
 
 we can also unit test our state logic completely separately from the view logic.
 
+<sub>./src/store.test.js</sub>
+```js
+import store, { actions } from './store';
 
+it('has an initial state, can set code', ()=>{
+  const initState = store.getState();
+
+  expect(typeof initState).toEqual('object');
+
+  expect(Array.isArray(initState.code)).toEqual(true);
+
+  const nextCode = [ 4, 1, 3, 0 ];
+  const setCodeAction = actions.setCode( nextCode );
+
+  store.dispatch( setCodeAction );
+
+  const state = store.getState();
+
+  expect( state.code ).toEqual( nextCode );
+});
+```
+
+and the reducers
+
+```js
+import store, { actions, reducers } from './store';
+
+//...
+
+it('reduces the next code into the state', ()=>{
+  const nextCode = [5, 5, 3, 0];
+  const setNextCodeAction = actions.setCode(nextCode);
+
+  const initState = { code: [1, 2, 3, 4] };
+  const nextState = reducers.setCode(initState, setNextCodeAction);
+
+  expect( nextState.code ).toEqual( nextCode );
+});
+```
 
 
 
@@ -627,10 +707,267 @@ we can also unit test our state logic completely separately from the view logic.
 we'll need the user to be able to see the code he's entering
 
 
+first we'll wrap our inputs with a flex container (from the parent `App` Component)
+
+<sub>./src/App.js</sub>
+```html
+export const App = ({ code, setCode })=> (
+  <div className="App">
+    <div className='guess-container'>
+      <CodeInput code={code} onChange={setCode} colors={6}/>
+    </div>
+  </div>
+);
+```
+
+so now we can style them to appear correctly
+
+
 <sub>./src/App.css</sub>
 ```css
+.guess-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  display: flex;
+  justify-content: space-around;
+}
+
+[class^=dot] {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  
+  width: 50px;
+  height: 150px;
+
+  position: relative;
+}
+
+[class^=dot]::after {
+  content: "";
+  position: absolute;
+
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+
+  top: calc(50% - 20px);
+  left: calc(50% - 20px);
+}
+
+.dot-0::after { background-color: red; }
+.dot-1::after { background-color: darkorange; }
+.dot-2::after { background-color: gold; }
+.dot-3::after { background-color: green; }
+.dot-4::after { background-color: blue; }
+.dot-5::after { background-color: cyan; }
+```
+
+we may take the time to make a separate file for CSS for the CodeInput component, however, as this workshop is focused on the state management, I'll focus less on the styling.
+
+
+
+### coverage
+
+let's run `$ yarn test --coverage --watchAll=false` and see where we're at again
+
+
+I'm finding it a bit annoying that jest is collecting coverage from files I don't care to test (index.js, serviceWorker.js, enzyme-config.js)
+
+
+so I'll add the following to my `<sub>./package.json</sub> to clean that up
+
+```js
+//...
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/index.js",
+      "!src/enzyme-config.js",
+      "!src/serviceWorker.js"
+    ]
+  }
+}
+```
+
+now that coverage is 100% like it should be.
+
+
+
+## gameplay
+
+the user will need a button to make a guess
+
+which will add the current code to the state.guesses
+
+and it will compute the score for the guess by the secretCode
+
+which will be added to the end of state.scores
+
+the guesses and scores are to be rendered in order next to one another
+
+
+
+### scoring a guess
+
+`$ touch src/score.js src/score.test.js`
+
+<sub>./src/score.js</sub>
+```js
+export default ()=> 0;
+```
+
+let's unit test the scoring function
+
+we'll do that by first writing some test cases
+
+<sub>./src/score.test.js</sub>
+```js
+import score from './score';
+
+it('scores the guess', ()=> {
+  const secret = [1, 2, 3, 4];
+
+  const guesses = [
+    [4, 3, 2, 1],
+    [5, 5, 5, 5],
+    [2, 2, 2, 2],
+    [2, 2, 2, 3],
+    [1, 2, 3, 3],
+    [1, 2, 3, 4],
+  ];
+
+  const scores = [
+    [0, 4],
+    [0, 0],
+    [1, 0],
+    [1, 1],
+    [3, 0],
+    [4, 0],
+  ];
+
+  const output = guesses.map(score(secret));
+
+  output.forEach((o, i)=> expect( o ).toEqual( scores[i] ) )
+});
+```
+
+
+#### currying
+
+let's write a curried function for getting the score
+
+<sub>./src/score.js</sub>
+```js
+export default secret => guess => {
+  
+};
+```
+
+now we get back a reasonable error as our tests fail
+
+
+
+and now we can write a logic for the scoring
+
 
 ```
+for every digit which is eactly the same, add one to the first score number (black dots)
+
+from the digits remaining, find the number of colors that matched in the wrong position
+  - for each digit which was matched this way, add one to the second score number (white)
+```
+
+first let's count the exact matches
+
+
+<sub>./src/score.js</sub>
+```js
+export default secret => guess => {
+  const blacks = guess.filter((g, i)=> g === secret[i]).length;
+
+```
+
+
+then we'll compute the remaining digits
+
+
+<sub>./src/score.js</sub>
+```js
+  const remainderGuess = guess.filter((g, i)=> g !== secret[i]);
+  const remainderSecret = secret.filter((s, i)=> s !== guess[i]);
+  
+```
+
+then we'll count how many of each digit we have left
+
+<sub>./src/score.js</sub>
+```js
+  const guessBins = [0, 1, 2, 3, 4, 5]
+    .map(i=> remainderGuess.filter(g => g === i).length);
+  
+  const secretBins = [0, 1, 2, 3, 4, 5]
+    .map(i=> remainderSecret.filter(s => s === i).length);
+
+```
+
+then we'll add up all the matches
+
+<sub>./src/score.js</sub>
+```js
+  const whites = guessBins.reduce((total, g, i)=> total + Math.min(g, secretBins[i]), 0);
+
+  return [blacks, whites];
+};
+
+```
+
+
+#### edge cases
+
+let's make sure we add some more test cases to cover scenarios where the secret code has duplicates in it
+
+
+<sub>./src/score.test.js</sub>
+```js
+it('scores the guess with duplicates in the secret', ()=> {
+  const secret = [2, 2, 3, 3];
+
+  const guesses = [
+    [4, 3, 2, 1],
+    [5, 5, 5, 5],
+    [2, 2, 2, 2],
+    [2, 2, 2, 3],
+    [1, 3, 2, 3],
+    [2, 2, 3, 3],
+  ];
+
+  const scores = [
+    [0, 2],
+    [0, 0],
+    [2, 0],
+    [3, 0],
+    [1, 2],
+    [4, 0],
+  ];
+
+  const output = guesses.map(score(secret));
+
+  output.forEach((o, i)=> expect( o ).toEqual( scores[i] ) )
+});
+```
+
+
+### guess button
+
+#### test (enzyme) to click guess button
+
+here we'll expect the guess and score to be saved to the state
+
+and the guess to be rendered along with its score
+
+
 
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
