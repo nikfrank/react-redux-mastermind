@@ -799,11 +799,11 @@ now that coverage is 100% like it should be.
 
 the user will need a button to make a guess
 
-which will add the current code to the state.guesses
+which will add the current code to the `state.guesses`
 
 and it will compute the score for the guess by the secretCode
 
-which will be added to the end of state.scores
+which will be added to the end of `state.scores`
 
 the guesses and scores are to be rendered in order next to one another
 
@@ -893,7 +893,6 @@ export default secret => guess => {
 then we'll compute the remaining digits
 
 
-<sub>./src/score.js</sub>
 ```js
   const remainderGuess = guess.filter((g, i)=> g !== secret[i]);
   const remainderSecret = secret.filter((s, i)=> s !== guess[i]);
@@ -902,7 +901,6 @@ then we'll compute the remaining digits
 
 then we'll count how many of each digit we have left
 
-<sub>./src/score.js</sub>
 ```js
   const guessBins = [0, 1, 2, 3, 4, 5]
     .map(i=> remainderGuess.filter(g => g === i).length);
@@ -914,7 +912,6 @@ then we'll count how many of each digit we have left
 
 then we'll add up all the matches
 
-<sub>./src/score.js</sub>
 ```js
   const whites = guessBins.reduce((total, g, i)=> total + Math.min(g, secretBins[i]), 0);
 
