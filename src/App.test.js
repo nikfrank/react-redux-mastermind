@@ -46,3 +46,19 @@ it('mounts to enzyme', ()=>{
   const state6 = store.getState();
   expect(state6.code).toEqual([3, 0, 3, 4]);
 });
+
+
+it('guesses the code', ()=>{
+  const p = mount(<Provider store={store}><App /></Provider>);
+
+  const guessButton = p.find('button.guess');
+  expect( guessButton ).toHaveLength( 1 );
+
+  const initState = store.getState();
+  
+  guessButton.at(0).simulate('click');
+
+  const nextState = store.getState();
+
+  expect( nextState.guesses ).toHaveLength( initState.guesses.length + 1 );
+});

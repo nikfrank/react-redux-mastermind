@@ -8,11 +8,12 @@ import { actions } from './store';
 import CodeInput from './CodeInput';
 
 
-export const App = ({ code, setCode })=> (
+export const App = ({ code, setCode, guess })=> (
   <div className="App">
     <div className='guess-container'>
       <CodeInput code={code} onChange={setCode} colors={6}/>
     </div>
+    <button className='guess' onClick={guess}>GUESS</button>
   </div>
 );
 

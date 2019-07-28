@@ -964,6 +964,116 @@ here we'll expect the guess and score to be saved to the state
 
 and the guess to be rendered along with its score
 
+<sub>./src/App.js</sub>
+```js
+it('guesses the code', ()=>{
+  const p = mount(<Provider store={store}><App /></Provider>);
+
+  const guessButton = p.find('button.guess');
+  expect( guessButton ).toHaveLength( 1 );
+});
+```
+
+now we need to make a `<button className='guess'>` to fulfill the test
+
+<sub>./src/App.js</sub>
+```js
+export const App = ({ code, setCode })=> (
+  <div className="App">
+    <div className='guess-container'>
+      <CodeInput code={code} onChange={setCode} colors={6}/>
+    </div>
+    <button className='guess'>GUESS</button>
+  </div>
+);
+```
+
+now we can expect the guess to end up in the `state`
+
+<sub>./src/App.test.js</sub>
+```js
+it('guesses the code', ()=>{
+  const p = mount(<Provider store={store}><App /></Provider>);
+
+  const guessButton = p.find('button.guess');
+  expect( guessButton ).toHaveLength( 1 );
+
+  const initState = store.getState();
+  
+  guessButton.at(0).simulate('click');
+
+  const nextState = store.getState();
+
+  expect( nextState.guesses ).toHaveLength( initState.guesses.length + 1 );
+});
+```
+
+which we'll need to fulfill by adding `guesses` to the `initState`
+
+and making a reducer with an action
+
+<sub>./src/store.test.js</sub>
+```js
+it('puts the guesses in the state', ()=>{
+  const initState = store.getState();
+  expect( Array.isArray(initState.guesses) ).toEqual( true );
+
+  const guessAction = actions.guess();
+  
+  const nextState = reducers.guess(initState, guessAction);
+
+  expect( nextState.guesses ).toEqual( [...initState.guesses, initState.code] );
+});
+```
+
+which we can now fulfill with
+
+<sub>./src/store.js</sub>
+```js
+//...
+
+export const initState = {
+  code: [1, 2, 3, 4],
+  guesses: [],
+};
+
+
+
+export const reducers = {
+  setCode: (state, action)=> ({ ...state, code: action.payload }),
+  guess: (state, action)=> ({ ...state, guesses: [...state.guesses, [...state.code] ] }),
+};
+
+
+export const actions = {
+  setCode: code => ({ type: 'setCode', payload: code }),
+  guess: ()=> ({ type: 'guess' }),
+};
+
+//...
+```
+
+and
+
+<sub>./src/App.js</sub>
+```html
+    <button className='guess' onClick={guess}>GUESS</button>
+```
+
+
+now we should compute the score with the guess!
+
+### scoring the guesses
+
+
+
+next we need a test for displaying the guesses!
+
+### displaying the guesses
+
+
+
+
 
 
 

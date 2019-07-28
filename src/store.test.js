@@ -27,3 +27,15 @@ it('reduces the next code into the state', ()=>{
 
   expect( nextState.code ).toEqual( nextCode );
 });
+
+
+it('puts the guesses in the state', ()=>{
+  const initState = store.getState();
+  expect( Array.isArray(initState.guesses) ).toEqual( true );
+
+  const guessAction = actions.guess();
+  
+  const nextState = reducers.guess(initState, guessAction);
+
+  expect( nextState.guesses ).toEqual( [...initState.guesses, initState.code] );
+});
