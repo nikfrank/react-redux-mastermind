@@ -1115,7 +1115,7 @@ export const initState = {
   code: [1, 2, 3, 4],
   guesses: [],
   scores: [],
-  secret: [0, 0, 0, 0],
+  secret: [0, 0, 0, 1],
 };
 
 export const reducers = {
@@ -1145,9 +1145,154 @@ next we need a test for displaying the guesses!
 
 ### displaying the guesses
 
+<sub>./src/App.test.js</sub>
+```js
+//...
+
+it('guesses the code', ()=>{
+  const p = mount(<Provider store={store}><App /></Provider>);
+
+  const guessButton = p.find('button.guess');
+  expect( guessButton ).toHaveLength( 1 );
+
+  expect( p.find('.result-container') ).toHaveLength( 0 );
+  expect( p.find('.score-container') ).toHaveLength( 0 );
+  
+  const initState = store.getState();
+  
+  guessButton.at(0).simulate('click');
+
+  const nextState = store.getState();
+
+  expect( nextState.guesses ).toHaveLength( initState.guesses.length + 1 );
+
+  expect( p.find('.result-container') ).toHaveLength( 1 );
+  expect( p.find('.score-container') ).toHaveLength( 1 );
+});
+```
+
+now in this test, we're expecting to generate a `.result-container` and a `.score-container` when we guess
+
+
+let's render those
+
+<sub>./src/App.js</sub>
+```js
+export const App = ({ code, guesses, scores, setCode, guess })=> (
+  <div className="App">
+    {guesses.map((guess, i)=> (
+      <div key={i}>
+        <div className='result-container'></div>
+        <div className='score-container'></div>
+      </div>
+    ))}
+    
+    <div className='guess-container'>
+      <CodeInput code={code} onChange={setCode} colors={6}/>
+    </div>
+    <button className='guess' onClick={guess}>GUESS</button>
+  </div>
+);
+```
+
+now we can test that they are what we guessed / scored
+
+<sub>./src/App.test.js</sub>
+```js
+  const resultDots = p.find('.result-container div');
+  
+  expect( resultDots.at(0).hasClass('dot-'+initState.code[0]) ).toEqual( true );
+  expect( resultDots.at(1).hasClass('dot-'+initState.code[1]) ).toEqual( true );
+  expect( resultDots.at(2).hasClass('dot-'+initState.code[2]) ).toEqual( true );
+  expect( resultDots.at(3).hasClass('dot-'+initState.code[3]) ).toEqual( true );
+
+  const blackScoreDots = p.find('.score-container div.black');
+  const whiteScoreDots = p.find('.score-container div.white');
+
+  expect( blackScoreDots ).toHaveLength( nextState.scores[0][0] );
+  expect( whiteScoreDots ).toHaveLength( nextState.scores[0][1] );
+
+```
+
+and implement the feature
+
+<sub>./src/App.js</sub>
+```js
+export const App = ({ code, guesses, scores, setCode, guess })=> (
+  <div className="App">
+    {guesses.map((guess, i)=> (
+      <div key={i}>
+        <div className='result-container guess-container'>
+          {guess.map((g, gi)=> (
+            <div className={'dot-'+g} key={gi}/>
+          ))}
+        </div>
+        <div className='score-container'>
+          {[...Array(scores[i][0])].map((s, si)=> (
+            <div className='black' key={si}/>
+          ))}
+          {[...Array(scores[i][1])].map((s, si)=> (
+            <div className='white' key={si}/>
+          ))}
+        </div>
+      </div>
+    ))}
+    
+    <div className='guess-container'>
+      <CodeInput code={code} onChange={setCode} colors={6}/>
+    </div>
+    <button className='guess' onClick={guess}>GUESS</button>
+  </div>
+);
+```
 
 
 
+### styling the dots
+
+<sub>./src/App.css</sub>
+```css
+//...
+
+.result-container {
+  display: inline-flex;
+  width: 70vw;
+}
+
+.score-container {
+  display: inline-flex;
+  width: 30vw;
+}
+
+.score-container .black {
+  height: 10px;
+  width: 10px;
+
+  border-radius: 50%;
+  background-color: black;
+}
+
+.score-container .white {
+  height: 10px;
+  width: 10px;
+
+  border-radius: 50%;
+  background-color: pink;
+}
+```
+
+
+### coverage
+
+let's make sure our coverage stays at 100%
+
+<sub>./src/App.test.js</sub>
+```js
+  p.find('.up3').at(0).simulate('click');
+  p.find('.up3').at(0).simulate('click');
+```
+
+that way there's a white dot in the result
 
 
 

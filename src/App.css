@@ -35,3 +35,30 @@
 .dot-3::after { background-color: green; }
 .dot-4::after { background-color: blue; }
 .dot-5::after { background-color: cyan; }
+
+
+.result-container {
+  display: inline-flex;
+  width: 70vw;
+}
+
+.score-container {
+  display: inline-flex;
+  width: 30vw;
+}
+
+.score-container .black {
+  height: 10px;
+  width: 10px;
+
+  border-radius: 50%;
+  background-color: black;
+}
+
+.score-container .white {
+  height: 10px;
+  width: 10px;
+
+  border-radius: 50%;
+  background-color: pink;
+}

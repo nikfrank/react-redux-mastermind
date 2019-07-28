@@ -5,7 +5,7 @@ export const initState = {
   code: [1, 2, 3, 4],
   guesses: [],
   scores: [],
-  secret: [0, 0, 0, 0],
+  secret: [0, 0, 0, 1],
 };
 
 

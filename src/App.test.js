@@ -54,6 +54,12 @@ it('guesses the code', ()=>{
   const guessButton = p.find('button.guess');
   expect( guessButton ).toHaveLength( 1 );
 
+  expect( p.find('.result-container') ).toHaveLength( 0 );
+  expect( p.find('.score-container') ).toHaveLength( 0 );
+
+  p.find('.up3').at(0).simulate('click');
+  p.find('.up3').at(0).simulate('click');
+  
   const initState = store.getState();
   
   guessButton.at(0).simulate('click');
@@ -61,4 +67,21 @@ it('guesses the code', ()=>{
   const nextState = store.getState();
 
   expect( nextState.guesses ).toHaveLength( initState.guesses.length + 1 );
+
+  expect( p.find('.result-container') ).toHaveLength( 1 );
+  expect( p.find('.score-container') ).toHaveLength( 1 );
+
+  const resultDots = p.find('.result-container div');
+
+  expect( resultDots.at(0).hasClass('dot-'+initState.code[0]) ).toEqual( true );
+  expect( resultDots.at(1).hasClass('dot-'+initState.code[1]) ).toEqual( true );
+  expect( resultDots.at(2).hasClass('dot-'+initState.code[2]) ).toEqual( true );
+  expect( resultDots.at(3).hasClass('dot-'+initState.code[3]) ).toEqual( true );
+
+  const blackScoreDots = p.find('.score-container div.black');
+  const whiteScoreDots = p.find('.score-container div.white');
+
+  expect( blackScoreDots ).toHaveLength( nextState.scores[0][0] );
+  expect( whiteScoreDots ).toHaveLength( nextState.scores[0][1] );
 });
+
