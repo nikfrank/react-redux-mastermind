@@ -1063,9 +1063,83 @@ and
 
 now we should compute the score with the guess!
 
+
+
 ### scoring the guesses
 
+<sub>./src/store.test.js</sub>
+```js
+//...
+import score from './score';
 
+//...
+
+it('puts the secret and scores in the state', ()=>{
+  const initState = store.getState();
+
+  const setSecretAction = actions.setSecret([2, 2, 0, 5]);
+  const stateWithSecret = reducers.setSecret( initState, setSecretAction );
+  
+  expect( Array.isArray(stateWithSecret.guesses) ).toEqual( true );
+  expect( Array.isArray(stateWithSecret.scores) ).toEqual( true );
+  expect( Array.isArray(stateWithSecret.secret) ).toEqual( true );
+
+  const setCodeAction = actions.setCode([ 2, 5, 0, 3 ]);
+  const stateWithCode = reducers.setCode( stateWithSecret, setCodeAction );
+  
+  const guessAction = actions.guess();
+  
+  const nextState = reducers.guess(stateWithCode, guessAction);
+
+  expect( nextState.guesses ).toEqual( [...stateWithCode.guesses, stateWithCode.code] );
+  expect( nextState.scores ).toEqual( [...stateWithCode.scores, score(stateWithCode.secret)(stateWithCode.code) ] );
+
+  expect( nextState.code ).toEqual( [ 0, 0, 0, 0 ] );
+});
+```
+
+now we need to make `actions.setSecret`, `reducers.setSecret`, `actions.guess`, and `reducers.guess`
+
+`reducers.guess` is also expected to set the code to `[0, 0, 0, 0]`
+
+
+<sub>./src/store.js</sub>
+```js
+//...
+import score from './score';
+
+//...
+
+
+export const initState = {
+  code: [1, 2, 3, 4],
+  guesses: [],
+  scores: [],
+  secret: [0, 0, 0, 0],
+};
+
+export const reducers = {
+  setSecret: (state, action)=> ({ ...state, secret: action.payload, scores: [] }),
+  setCode: (state, action)=> ({ ...state, code: action.payload }),
+  guess: (state, action)=> ({
+    ...state,
+    guesses: [...state.guesses, [...state.code] ],
+    scores: [...state.scores, score(state.secret)(state.code) ],
+    code: [0, 0, 0, 0],
+  }),
+};
+
+
+export const actions = {
+  setSecret: secret=> ({ type: 'setSecret', payload: secret }),
+  setCode: code => ({ type: 'setCode', payload: code }),
+  guess: ()=> ({ type: 'guess' }),
+};
+
+//...
+```
+
+great!, we can make guesses and have the scores compiled alongside
 
 next we need a test for displaying the guesses!
 

@@ -17,7 +17,7 @@ it('renders without crashing', () => {
 
 it('mounts to enzyme', ()=>{
   const p = mount(<Provider store={store}><App /></Provider>);
-
+  
   const state = store.getState();
 
   expect(state.code).toEqual([1, 2, 3, 4]); // the initState

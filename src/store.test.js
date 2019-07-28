@@ -1,4 +1,5 @@
 import store, { actions, reducers } from './store';
+import score from './score';
 
 it('has an initial state, can set code', ()=>{
   const initState = store.getState();
@@ -38,4 +39,28 @@ it('puts the guesses in the state', ()=>{
   const nextState = reducers.guess(initState, guessAction);
 
   expect( nextState.guesses ).toEqual( [...initState.guesses, initState.code] );
+});
+
+
+it('puts the secret and scores in the state', ()=>{
+  const initState = store.getState();
+
+  const setSecretAction = actions.setSecret([2, 2, 0, 5]);
+  const stateWithSecret = reducers.setSecret( initState, setSecretAction );
+  
+  expect( Array.isArray(stateWithSecret.guesses) ).toEqual( true );
+  expect( Array.isArray(stateWithSecret.scores) ).toEqual( true );
+  expect( Array.isArray(stateWithSecret.secret) ).toEqual( true );
+
+  const setCodeAction = actions.setCode([ 2, 5, 0, 3 ]);
+  const stateWithCode = reducers.setCode( stateWithSecret, setCodeAction );
+  
+  const guessAction = actions.guess();
+  
+  const nextState = reducers.guess(stateWithCode, guessAction);
+
+  expect( nextState.guesses ).toEqual( [...stateWithCode.guesses, stateWithCode.code] );
+  expect( nextState.scores ).toEqual( [...stateWithCode.scores, score(stateWithCode.secret)(stateWithCode.code) ] );
+
+  expect( nextState.code ).toEqual( [ 0, 0, 0, 0 ] );
 });
