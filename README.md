@@ -1462,6 +1462,8 @@ so now that there's tests, you may style your app (as long as the tests still pa
 
 deployment we will follow the standard pattern [advised by CRA](https://github.com/mars/create-react-app-buildpack)
 
+[available deployed](http://react-redux-mastermind.herokuapp.com/)
+
 
 
 
