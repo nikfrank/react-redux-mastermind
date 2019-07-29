@@ -5,7 +5,7 @@ export const initState = {
   code: [1, 2, 3, 4],
   guesses: [],
   scores: [],
-  secret: [0, 0, 0, 1],
+  secret: [0, 0, 0, 1].map(()=> Math.floor( Math.random()*6 ) ),
 };
 
 
@@ -18,6 +18,13 @@ export const reducers = {
     scores: [...state.scores, score(state.secret)(state.code) ],
     code: [0, 0, 0, 0],
   }),
+
+  newGame: (state, action)=> ({
+    ...state,
+    guesses: [],
+    scores: [],
+    secret: [0, 0, 0, 1].map(()=> Math.floor( Math.random()*6 ) ),
+  }),
 };
 
 
@@ -25,6 +32,7 @@ export const actions = {
   setSecret: secret=> ({ type: 'setSecret', payload: secret }),
   setCode: code => ({ type: 'setCode', payload: code }),
   guess: ()=> ({ type: 'guess' }),
+  newGame: ()=> ({ type: 'newGame' }),
 };
 
 

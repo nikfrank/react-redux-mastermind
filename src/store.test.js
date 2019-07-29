@@ -64,3 +64,27 @@ it('puts the secret and scores in the state', ()=>{
 
   expect( nextState.code ).toEqual( [ 0, 0, 0, 0 ] );
 });
+
+
+
+it('makes a new game', ()=>{
+  const initState = store.getState();
+
+  const setSecretAction = actions.setSecret([2, 2, 0, 5]);
+  const stateWithSecret = reducers.setSecret( initState, setSecretAction );
+
+  const setCodeAction = actions.setCode([2, 2, 0, 5]);
+  const correctCodeState = reducers.setCode( stateWithSecret, setCodeAction );
+
+  const guessAction = actions.guess();
+  const doneGameState = reducers.guess( correctCodeState, guessAction );
+
+  expect( doneGameState.scores.reverse()[0] ).toEqual([ 4, 0 ]);
+  
+  const newGameAction = actions.newGame();
+  const nextGameState = reducers.newGame( doneGameState, newGameAction );
+
+  expect( nextGameState.secret ).not.toEqual( doneGameState.secret );
+  expect( nextGameState.scores ).toHaveLength( 0 );
+  expect( nextGameState.guesses ).toHaveLength( 0 );
+});

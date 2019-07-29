@@ -37,6 +37,12 @@
 .dot-5::after { background-color: cyan; }
 
 
+button.guess {
+  width: 100%;
+  margin: 10px 0;
+}
+
+
 .result-container {
   display: inline-flex;
   width: 70vw;

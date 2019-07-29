@@ -1152,6 +1152,8 @@ next we need a test for displaying the guesses!
 it('guesses the code', ()=>{
   const p = mount(<Provider store={store}><App /></Provider>);
 
+  store.dispatch({ type: 'setSecret', payload: [ 3, 3, 2, 2 ] });
+
   const guessButton = p.find('button.guess');
   expect( guessButton ).toHaveLength( 1 );
 
@@ -1220,6 +1222,11 @@ and implement the feature
 ```js
 export const App = ({ code, guesses, scores, setCode, guess })=> (
   <div className="App">
+    <div className='guess-container'>
+      <CodeInput code={code} onChange={setCode} colors={6}/>
+    </div>
+    <button className='guess' onClick={guess}>GUESS</button>
+
     {guesses.map((guess, i)=> (
       <div key={i}>
         <div className='result-container guess-container'>
@@ -1237,11 +1244,6 @@ export const App = ({ code, guesses, scores, setCode, guess })=> (
         </div>
       </div>
     ))}
-    
-    <div className='guess-container'>
-      <CodeInput code={code} onChange={setCode} colors={6}/>
-    </div>
-    <button className='guess' onClick={guess}>GUESS</button>
   </div>
 );
 ```
@@ -1293,6 +1295,173 @@ let's make sure our coverage stays at 100%
 ```
 
 that way there's a white dot in the result
+
+
+
+
+## start game and end game
+
+when the user loads the page, we want to generate a random code
+
+when the user scores `[4, 0]`, we want to change the guess button to a new game button
+
+new game will make a new code and clear the scores and guesses
+
+
+### random code
+
+let's set the secret to something random at the start
+
+<sub>./src/store.js</sub>
+```js
+export const initState = {
+  //...
+  secret: [1, 2, 3, 4].map(()=> Math.floor( Math.random()*6 ) ),
+  //...
+```
+
+
+### end game
+
+we want to test here that when the score is `[4, 0]` that the guess button is replaced
+
+
+<sub>./src/App.test.js</sub>
+```js
+
+it('ends the game', ()=>{
+  const p = mount(<Provider store={store}><App/></Provider>);
+
+  const state = store.getState();
+
+  store.dispatch({ type: 'setCode', payload: state.secret });
+
+  p.find('button.guess').at(0).simulate('click');
+
+  const guessButtonAfter = p.find('button.guess');
+
+  expect( guessButtonAfter ).toHaveLength( 0 );
+
+  const newGameButton = p.find('button.new-game');
+
+  expect( newGameButton ).toHaveLength( 1 );
+});
+```
+
+
+and to pass the test we can do
+
+<sub>./src/App.js</sub>
+```js
+    {(scores[scores.length-1]||[])[0] !== 4 ? (
+       <button className='guess' onClick={guess}>GUESS</button>
+    ) : (
+       <button className='new-game'>NEW GAME</button>
+    )}
+```
+
+
+
+now we need a test to check that the new game clears the scores and guesses and picks a new secret
+
+
+<sub>./src/App.test.js</sub>
+```js
+  newGameButton.at(0).simulate('click');
+
+  const newGameState = store.getState();
+
+  expect( newGameState.secret ).not.toEqual( state.secret );
+
+  expect( newGameState.scores ).toHaveLength( 0 );
+  expect( newGameState.guesses ).toHaveLength( 0 );
+
+```
+
+so to pass this test, we'll need another reducer and action (which will each need tests)
+
+
+<sub>./src/store.test.js</sub>
+```js
+it('makes a new game', ()=>{
+  const initState = store.getState();
+
+  const setSecretAction = actions.setSecret([2, 2, 0, 5]);
+  const stateWithSecret = reducers.setSecret( initState, setSecretAction );
+
+  const setCodeAction = actions.setCode([2, 2, 0, 5]);
+  const correctCodeState = reducers.setCode( stateWithSecret, setCodeAction );
+
+  const guessAction = actions.guess();
+  const doneGameState = reducers.guess( correctCodeState, guessAction );
+
+  expect( doneGameState.scores.reverse()[0] ).toEqual([ 4, 0 ]);
+  
+  const newGameAction = actions.newGame();
+  const nextGameState = reducers.newGame( doneGameState, newGameAction );
+
+  expect( nextGameState.secret ).not.toEqual( doneGameState.secret );
+  expect( nextGameState.scores ).toHaveLength( 0 );
+  expect( nextGameState.guesses ).toHaveLength( 0 );
+});
+```
+
+now we can write the reducer and action to pass this test
+
+
+<sub>./src/store.js</sub>
+```js
+//... in reducers
+
+  newGame: (state, action)=> ({
+    ...state,
+    guesses: [],
+    scores: [],
+    secret: [0, 0, 0, 1].map(()=> Math.floor( Math.random()*6 ) ),
+  }),
+
+
+//... in actions
+
+  newGame: ()=> ({ type: 'newGame' }),
+
+//...
+```
+
+that'll pass the store test
+
+
+now we need to connect our action to our rendered button, so our simulated click will make a new game
+
+
+<sub>./src/App.js</sub>
+```js
+       <button className='new-game' onClick={newGame}>NEW GAME</button>
+```
+
+
+### coverage
+
+let's check our coverage!
+
+100%
+
+because we're perfect.
+
+
+
+## deployment and styling
+
+we may have neglected to style our app for our users during all that testing
+
+
+so now that there's tests, you may style your app (as long as the tests still pass at 100%)
+
+
+### deployment
+
+deployment we will follow the standard pattern [advised by CRA](https://github.com/mars/create-react-app-buildpack)
+
 
 
 

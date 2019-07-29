@@ -17,7 +17,7 @@ it('renders without crashing', () => {
 
 it('mounts to enzyme', ()=>{
   const p = mount(<Provider store={store}><App /></Provider>);
-  
+
   const state = store.getState();
 
   expect(state.code).toEqual([1, 2, 3, 4]); // the initState
@@ -51,6 +51,8 @@ it('mounts to enzyme', ()=>{
 it('guesses the code', ()=>{
   const p = mount(<Provider store={store}><App /></Provider>);
 
+  store.dispatch({ type: 'setSecret', payload: [ 3, 3, 2, 2 ] });
+  
   const guessButton = p.find('button.guess');
   expect( guessButton ).toHaveLength( 1 );
 
@@ -85,3 +87,31 @@ it('guesses the code', ()=>{
   expect( whiteScoreDots ).toHaveLength( nextState.scores[0][1] );
 });
 
+
+
+it('ends the game', ()=>{
+  const p = mount(<Provider store={store}><App/></Provider>);
+
+  const state = store.getState();
+
+  store.dispatch({ type: 'setCode', payload: state.secret });
+
+  p.find('button.guess').at(0).simulate('click');
+
+  const guessButtonAfter = p.find('button.guess');
+
+  expect( guessButtonAfter ).toHaveLength( 0 );
+
+  const newGameButton = p.find('button.new-game');
+
+  expect( newGameButton ).toHaveLength( 1 );
+
+  newGameButton.at(0).simulate('click');
+
+  const newGameState = store.getState();
+
+  expect( newGameState.secret ).not.toEqual( state.secret );
+
+  expect( newGameState.scores ).toHaveLength( 0 );
+  expect( newGameState.guesses ).toHaveLength( 0 );
+});

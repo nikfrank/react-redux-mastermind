@@ -8,8 +8,17 @@ import { actions } from './store';
 import CodeInput from './CodeInput';
 
 
-export const App = ({ code, guesses, scores, setCode, guess })=> (
+export const App = ({ code, guesses, scores, setCode, guess, newGame })=> (
   <div className="App">
+    <div className='guess-container'>
+      <CodeInput code={code} onChange={setCode} colors={6}/>
+    </div>
+
+    {(scores[scores.length-1]||[])[0] !== 4 ? (
+       <button className='guess' onClick={guess}>GUESS</button>
+    ) : (
+       <button className='new-game' onClick={newGame}>NEW GAME</button>
+    )}
     {guesses.map((guess, i)=> (
       <div key={i}>
         <div className='result-container guess-container'>
@@ -28,10 +37,6 @@ export const App = ({ code, guesses, scores, setCode, guess })=> (
       </div>
     ))}
     
-    <div className='guess-container'>
-      <CodeInput code={code} onChange={setCode} colors={6}/>
-    </div>
-    <button className='guess' onClick={guess}>GUESS</button>
   </div>
 );
 
